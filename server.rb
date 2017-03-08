@@ -1,7 +1,7 @@
 require 'socket'
 require 'open3'
 
-hostname = '192.168.1.7'
+hostname = 'localhost'
 port = 2000
 
 s = TCPServer.open(hostname, port)
