@@ -1,24 +1,38 @@
 require 'socket'
 require 'open3'
+require 'json'
 
-hostname = 'localhost'
-port = 2000
+file = open('settings.json')
+json_data = file.read
+data = JSON.parse(json_data)
+
+hostname = data['host']
+port = data['port'].to_i
 
 s = TCPServer.open(hostname, port)
 
 loop do
   client = s.accept
-  while line = client.gets   # Read lines from the socket
+  while line = client.gets
     if line.chop == 'exit'
       client.close
       exit
     else
       begin
-        stdin, stout, status = Open3.capture3(line.chop)      # And print with platform line terminator
-        client.puts(stdin)
-        puts(stdin)
+        if stdin['pwd'] then 
+          puts(Dir.pwd)
+          client.puts(Dir.pwd)
+        else
+          stdin, stout, status = Open3.capture3(line.chop)
+          client.puts(stdin)
+          puts(stdin)
+        end
       rescue
-        client.puts("command not found")
+        if stdin['cd'] then
+          Dir.chdir(stdin[3..stdin.length])
+        else
+          client.puts("command not found")
+        end
       end
     end
   end
